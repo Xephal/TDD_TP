@@ -1,7 +1,8 @@
 import { describe, test, expect } from "vitest";
-import { calculateBasePrice, calculateTotalPrice, calculatePricePerKm, canBook, canBookNewRide, bookRide } from "../../src/usecases/book-ride.usecase";
+import { calculateBasePrice, calculateTotalPrice, calculatePricePerKm, canBook, canBookNewRide, bookRide, cancelBooking } from "../../src/usecases/book-ride.usecase";
 import type { Rider } from "../../src/entities/rider";
 import type { Booking } from "../../src/entities/Booking";
+import { BookingStatus } from "../../src/entities/Booking";
 
 
 describe("calculatePrice", () => {
@@ -62,6 +63,15 @@ describe("calculatePrice", () => {
             expect(ride.from).toBe("Paris")
             expect(ride.to).toBe("Paris")
             expect(rider.booking).not.toBeNull()
+        })
+})
+
+    describe("Step 5: Cancel a ride", () => { 
+        test("marks booking as canceled when rider cancels it", () => {
+            const rider: Rider = { id: "r1", balance: 50, booking: { id: "b1", riderId: "r1", from: "Paris", to: "Lyon", status: BookingStatus.PENDING }}
+            const canceled = cancelBooking(rider)
+            expect(canceled.status).toBe(BookingStatus.CANCELED)
+            expect(rider.booking).toBeNull()
         })
     })
 })

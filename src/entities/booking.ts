@@ -1,5 +1,6 @@
 export enum BookingStatus {
     PENDING = "pending",
+    CANCELED = "canceled",
 }
 
 export type Booking = {

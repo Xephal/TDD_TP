@@ -44,3 +44,12 @@ export function bookRide(rider: Rider, from: string, to: string, distanceKm: num
 
   return booking
 }
+
+export function cancelBooking(rider: Rider): Booking {
+  if (rider.booking === null) throw new Error("No active booking to cancel")
+
+  const canceled = { ...rider.booking, status: BookingStatus.CANCELED }
+  rider.booking = null
+  return canceled
+}
+
