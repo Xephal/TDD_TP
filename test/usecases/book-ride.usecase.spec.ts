@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { calculateBasePrice, calculateTotalPrice, calculatePricePerKm, canBook, canBookNewRide } from "../../src/usecases/book-ride.usecase";
+import { calculateBasePrice, calculateTotalPrice, calculatePricePerKm, canBook, canBookNewRide, bookRide } from "../../src/usecases/book-ride.usecase";
 import type { Rider } from "../../src/entities/rider";
 import type { Booking } from "../../src/entities/Booking";
 
@@ -49,5 +49,19 @@ describe("calculatePrice", () => {
             const rider = { id: "rider-1", balance: 20, booking: { id: "booking-1", riderId: "rider-1", from: "Paris", to: "Other" } as Booking } as Rider
             expect(canBookNewRide(rider.booking)).toBe(false)
         }
+
+        test("marks booking as pending when created", () => {
+            const rider: Rider = { id: "r1", balance: 50, booking: null }
+            const booking = bookRide(rider, "Paris", "Paris", 10)
+            expect(booking.status).toBe("pending")
+        })
+
+        test("books a ride when rider has funds and no active booking", () => {
+            const rider: Rider = { id: "r1", balance: 50, booking: null }
+            const ride = bookRide(rider, "Paris", "Paris", 10)
+            expect(ride.from).toBe("Paris")
+            expect(ride.to).toBe("Paris")
+            expect(rider.booking).not.toBeNull()
+        })
     })
 })

@@ -1,6 +1,11 @@
+export enum BookingStatus {
+    PENDING = "pending",
+}
+
 export type Booking = {
     id: string
     riderId: string
     from: string
     to: string
+    status: BookingStatus
 }
