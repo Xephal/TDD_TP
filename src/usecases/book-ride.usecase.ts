@@ -7,3 +7,7 @@ export function calculateBasePrice(from: string, to: string): number {
 
     return 0
 }
+
+export function calculatePricePerKm(distance: number): number {
+    return 0.5 * distance
+}
