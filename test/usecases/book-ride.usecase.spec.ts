@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { calculateBasePrice, calculatePricePerKm } from "../../src/usecases/book-ride.usecase";
+import { calculateBasePrice, calculateTotalPrice, calculatePricePerKm } from "../../src/usecases/book-ride.usecase";
 
 
 describe("calculatePrice", () => {
@@ -22,5 +22,10 @@ describe("calculatePrice", () => {
         })
     })
 
-    
+    describe("Step 3: Total price", () => { 
+        test("should add distance fare to the base fare", () => {
+            const total = calculateTotalPrice("Paris", "Paris", 10)
+            expect(total).toBe(2 + 0.5 * 10)
+        })
+    })
 })

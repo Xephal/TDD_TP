@@ -11,3 +11,9 @@ export function calculateBasePrice(from: string, to: string): number {
 export function calculatePricePerKm(distance: number): number {
     return 0.5 * distance
 }
+
+export function calculateTotalPrice(from: string, to: string, distance: number): number {
+  const base = calculateBasePrice(from, to)
+  const variable = calculatePricePerKm(distance)
+  return base + variable
+}
