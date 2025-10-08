@@ -9,4 +9,6 @@ export type Booking = {
     from: string
     to: string
     status: BookingStatus
+    amount: number
+    distanceKm?: number
 }

@@ -1,8 +1,9 @@
 import { describe, test, expect } from "vitest";
-import { calculateBasePrice, calculateTotalPrice, calculatePricePerKm, canBook, canBookNewRide, bookRide, cancelBooking } from "../../src/usecases/book-ride.usecase";
+import { bookRide, cancelBooking } from "../../src/usecases/book-ride.usecase";
+import { canBook, canBookNewRide } from "../../src/domain/services/rider.service"
+import { calculateBasePrice, calculateTotalPrice, calculatePricePerKm } from "../../src/domain/services/pricing.service"
 import type { Rider } from "../../src/entities/rider";
-import type { Booking } from "../../src/entities/Booking";
-import { BookingStatus } from "../../src/entities/Booking";
+import { BookingStatus, type Booking } from "../../src/entities/booking"
 
 
 describe("calculatePrice", () => {
@@ -55,6 +56,7 @@ describe("calculatePrice", () => {
             const rider: Rider = { id: "r1", balance: 50, booking: null }
             const booking = bookRide(rider, "Paris", "Paris", 10)
             expect(booking.status).toBe("pending")
+            expect(typeof booking.amount).toBe("number")
         })
 
         test("books a ride when rider has funds and no active booking", () => {
@@ -63,12 +65,14 @@ describe("calculatePrice", () => {
             expect(ride.from).toBe("Paris")
             expect(ride.to).toBe("Paris")
             expect(rider.booking).not.toBeNull()
+            // rider balance should be reduced by the ride amount
+            expect(rider.balance).toBe(50 - ride.amount)
         })
-})
+    })
 
     describe("Step 5: Cancel a ride", () => { 
         test("marks booking as canceled when rider cancels it", () => {
-            const rider: Rider = { id: "r1", balance: 50, booking: { id: "b1", riderId: "r1", from: "Paris", to: "Lyon", status: BookingStatus.PENDING }}
+            const rider: Rider = { id: "r1", balance: 50, booking: { id: "b1", riderId: "r1", from: "Paris", to: "Lyon", status: BookingStatus.PENDING, amount: 20 }}
             const canceled = cancelBooking(rider)
             expect(canceled.status).toBe(BookingStatus.CANCELED)
             expect(rider.booking).toBeNull()
