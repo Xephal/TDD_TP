@@ -1,3 +1,5 @@
+import type { Booking } from "../entities/Booking"
+
 export function calculateBasePrice(from: string, to: string): number {
     if (from === "Paris" && to === "Paris") return 2
     
@@ -20,4 +22,8 @@ export function calculateTotalPrice(from: string, to: string, distance: number):
 
 export function canBook(balance: number, price: number): boolean{
     return balance >= price
+}
+
+export function canBookNewRide(booking: Booking | null ): boolean {
+    return booking === null
 }

@@ -1,5 +1,7 @@
 import { describe, test, expect } from "vitest";
-import { calculateBasePrice, calculateTotalPrice, calculatePricePerKm, canBook } from "../../src/usecases/book-ride.usecase";
+import { calculateBasePrice, calculateTotalPrice, calculatePricePerKm, canBook, canBookNewRide } from "../../src/usecases/book-ride.usecase";
+import type { Rider } from "../../src/entities/rider";
+import type { Booking } from "../../src/entities/Booking";
 
 
 describe("calculatePrice", () => {
@@ -37,5 +39,15 @@ describe("calculatePrice", () => {
         test("returns false when funds are insufficient", () => {
             expect(canBook(5, 10)).toBe(false)
         })
+
+        test("returns true when activeRide is null", () => {
+            const rider = { id: "rider-1", balance: 20, booking: null } as Rider
+            expect(canBookNewRide(rider.booking)).toBe(true)
+        })
+
+        test("return false when rider has an active ride"), () => {
+            const rider = { id: "rider-1", balance: 20, booking: { id: "booking-1", riderId: "rider-1", from: "Paris", to: "Other" } as Booking } as Rider
+            expect(canBookNewRide(rider.booking)).toBe(false)
+        }
     })
 })
