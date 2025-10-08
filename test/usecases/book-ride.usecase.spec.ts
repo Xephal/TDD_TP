@@ -33,5 +33,9 @@ describe("calculatePrice", () => {
         test("return true if balance is superior to the ride price", () => {
             expect(canBook(20,10)).toBe(true)
         })
+
+        test("returns false when funds are insufficient", () => {
+            expect(canBook(5, 10)).toBe(false)
+        })
     })
 })
