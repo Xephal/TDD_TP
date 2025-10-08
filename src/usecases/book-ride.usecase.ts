@@ -17,3 +17,7 @@ export function calculateTotalPrice(from: string, to: string, distance: number):
   const variable = calculatePricePerKm(distance)
   return base + variable
 }
+
+export function canBook(balance: number, price: number): boolean{
+    return balance >= price
+}

@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { calculateBasePrice, calculateTotalPrice, calculatePricePerKm } from "../../src/usecases/book-ride.usecase";
+import { calculateBasePrice, calculateTotalPrice, calculatePricePerKm, canBook } from "../../src/usecases/book-ride.usecase";
 
 
 describe("calculatePrice", () => {
@@ -26,6 +26,12 @@ describe("calculatePrice", () => {
         test("should add distance fare to the base fare", () => {
             const total = calculateTotalPrice("Paris", "Paris", 10)
             expect(total).toBe(2 + 0.5 * 10)
+        })
+    })
+
+    describe("Step 4: Book a ride", () => { 
+        test("return true if balance is superior to the ride price", () => {
+            expect(canBook(20,10)).toBe(true)
         })
     })
 })
