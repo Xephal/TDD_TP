@@ -1,14 +1,21 @@
 import type { Rider } from "../entities/rider"
 import type { RiderRepository } from "../domain/repositories/rider.repository"
 import db from "./knex.client"
+import type { Knex } from "knex"
 import type { Booking } from "../entities/booking"
 
 export class KnexRiderRepository implements RiderRepository {
+  private knex: Knex
+
+  constructor(knexInstance?: Knex) {
+    this.knex = knexInstance ?? db
+  }
+
   async findById(id: string): Promise<Rider | null> {
-    const row = await db("riders").where({ id }).first()
+    const row = await this.knex("riders").where({ id }).first()
     if (!row) return null
 
-    const bookingsRows = await db("bookings").where({ rider_id: id })
+  const bookingsRows = await this.knex("bookings").where({ rider_id: id })
     const bookings: Booking[] = bookingsRows.map((b: any) => ({
       id: b.id,
       riderId: b.rider_id,

@@ -8,7 +8,10 @@
     "db:migrate": "knex migrate:latest --knexfile ./knexfile.js",
     "db:migrate:dev": "cross-env NODE_ENV=development knex migrate:latest --knexfile ./knexfile.js --env development",
     "db:migrate:test": "cross-env NODE_ENV=test knex migrate:latest --knexfile ./knexfile.js --env test",
-    "db:rollback": "knex migrate:rollback --knexfile ./knexfile.js"
+    "db:rollback": "knex migrate:rollback --knexfile ./knexfile.js",
+    "test:unit": "cross-env NODE_ENV=test vitest --run test/usecases",
+    "test:unit:db": "npm run db:migrate:test && cross-env USE_REAL_DB=1 NODE_ENV=test vitest --run test/usecases",
+    "test:integration": "npm run db:migrate:test && cross-env INTEGRATION=1 NODE_ENV=test vitest --run test/integration"
   },
   "keywords": [],
   "author": "",

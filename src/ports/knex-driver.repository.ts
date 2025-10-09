@@ -1,13 +1,20 @@
 import type { Driver } from "../entities/driver"
 import type { DriverRepository } from "../domain/repositories/driver.repository"
 import db from "./knex.client"
+import type { Knex } from "knex"
 
 export class KnexDriverRepository implements DriverRepository {
+  private knex: Knex
+
+  constructor(knexInstance?: Knex) {
+    this.knex = knexInstance ?? db
+  }
+
   async findById(id: string): Promise<Driver | null> {
-    const row = await db("drivers").where({ id }).first()
+    const row = await this.knex("drivers").where({ id }).first()
     if (!row) return null
 
-    const bookingRow = await db("bookings").where({ driver_id: id }).orderBy("created_at", "desc").first()
+  const bookingRow = await this.knex("bookings").where({ driver_id: id }).orderBy("created_at", "desc").first()
 
     const driver: Driver = {
       id: row.id,
@@ -29,6 +36,6 @@ export class KnexDriverRepository implements DriverRepository {
   }
 
   async save(driver: Driver): Promise<void> {
-    await db("drivers").insert({ id: driver.id, name: null }).onConflict("id").merge()
+    await this.knex("drivers").insert({ id: driver.id, name: null }).onConflict("id").merge()
   }
 }

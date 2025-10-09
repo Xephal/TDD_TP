@@ -1,10 +1,17 @@
 import type { Booking } from "../entities/booking"
 import type { BookingRepository } from "../domain/repositories/booking.repository"
 import db from "./knex.client"
+import type { Knex } from "knex"
 
 export class KnexBookingRepository implements BookingRepository {
+  private knex: Knex
+
+  constructor(knexInstance?: Knex) {
+    this.knex = knexInstance ?? db
+  }
+
   async findById(id: string): Promise<Booking | null> {
-    const row = await db("bookings").where({ id }).first()
+    const row = await this.knex("bookings").where({ id }).first()
     if (!row) return null
 
     return {
@@ -20,7 +27,7 @@ export class KnexBookingRepository implements BookingRepository {
   }
 
   async findByRiderId(riderId: string): Promise<Booking[]> {
-    const rows = await db("bookings").where({ rider_id: riderId }).orderBy("created_at", "desc")
+  const rows = await this.knex("bookings").where({ rider_id: riderId }).orderBy("created_at", "desc")
     return rows.map((row: any) => ({
       id: row.id,
       riderId: row.rider_id,
@@ -45,6 +52,6 @@ export class KnexBookingRepository implements BookingRepository {
       distance_km: booking.distanceKm || null,
     }
 
-    await db("bookings").insert(payload).onConflict("id").merge()
+    await this.knex("bookings").insert(payload).onConflict("id").merge()
   }
 }
