@@ -4,6 +4,5 @@ export type Rider = {
     id: string
     balance: number
     booking: Booking[]
-
 }
 

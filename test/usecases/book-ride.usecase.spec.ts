@@ -13,8 +13,10 @@ describe("calculatePrice", () => {
   beforeEach(() => {
     riderRepository = new RiderRepositoryFake([
       { id: "r1", balance: 50, booking : [] },
-    { id: "r2", balance: 20, booking: [{id: "b1", riderId: "r2", from: "Paris", to: "Other", status: BookingStatus.PENDING, amount: 15 }] },
-      { id: "r3", balance: 50, booking: [{ id: "b2", riderId: "r3", from: "Paris", to: "Lyon", status: BookingStatus.PENDING, amount: 20 }] }
+      { id: "r2", balance: 20, booking: [{id: "b1", riderId: "r2", from: "Paris", to: "Other", status: BookingStatus.PENDING, amount: 15 }] },
+      { id: "r3", balance: 50, booking: [{ id: "b2", riderId: "r3", from: "Paris", to: "Lyon", status: BookingStatus.PENDING, amount: 20 }] },
+      { id: "r4", balance: 50, booking: [{ id: "b_accepted", riderId: "r4", from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 }] },
+      { id: "r5", balance: 50, booking: [{ id: "b_canceled", riderId: "r5", from: "Paris", to: "Lyon", status: BookingStatus.CANCELED, amount: 15 }] }
     ])
   })
 
@@ -100,6 +102,20 @@ describe("calculatePrice", () => {
       const rider: Rider = riderRepository.findById("r3")!
       const canceled = cancelBooking(rider, riderRepository)
       expect(canceled.status).toBe(BookingStatus.CANCELED)
+      expect(rider.balance).toBe(70)
+    }) 
+    
+    test("marks booking as canceled when rider cancels an accepted booking and take a 5 euro fee", () => {
+      const rider = riderRepository.findById("r4")!
+      const canceled = cancelBooking(rider, riderRepository)
+      expect(canceled.status).toBe(BookingStatus.CANCELED)
+      expect(rider.balance).toBe(50 + 15 - 5)
     })
+
+
+    test("If a ride is already canceled, it should not be canceled again", () => {
+      const rider: Rider = riderRepository.findById("r5")!
+      expect(() => cancelBooking(rider, riderRepository)).toThrowError("No booking to cancel")
+    })    
   })
 })
