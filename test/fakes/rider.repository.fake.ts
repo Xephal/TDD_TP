@@ -11,4 +11,8 @@ export class RiderRepositoryFake implements RiderRepository {
   async findById(id: string): Promise<Rider | null> {
     return this.riders.get(id) ?? null
   }
+
+  async save(rider: Rider): Promise<void> {
+    this.riders.set(rider.id, rider)
+  }
 }

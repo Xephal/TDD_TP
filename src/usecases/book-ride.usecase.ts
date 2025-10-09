@@ -30,8 +30,8 @@ export function createBookRideUseCase(
     rider.balance -= total
     rider.booking.push(booking)
 
-    await bookingRepo.save(booking)
-    await riderRepo.findById(rider.id)
+  await bookingRepo.save(booking)
+  await riderRepo.save(rider)
 
     return booking
   }
@@ -59,9 +59,9 @@ export function createCancelBookingUseCase(
       rider.balance += booking.amount
     }
 
-    booking.status = BookingStatus.CANCELED
-    await bookingRepo.save(booking)
-    await riderRepo.findById(rider.id)
+  booking.status = BookingStatus.CANCELED
+  await bookingRepo.save(booking)
+  await riderRepo.save(rider)
 
     return booking
   }

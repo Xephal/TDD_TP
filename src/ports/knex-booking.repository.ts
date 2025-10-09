@@ -44,7 +44,7 @@ export class KnexBookingRepository implements BookingRepository {
     const payload: any = {
       id: booking.id,
       rider_id: booking.riderId,
-      driver_id: booking.driverId || null,
+      driver_id: booking.driverId ?? null,
       from: booking.from,
       to: booking.to,
       status: booking.status,

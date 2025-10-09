@@ -36,4 +36,8 @@ export class KnexRiderRepository implements RiderRepository {
 
     return rider
   }
+
+  async save(rider: Rider): Promise<void> {
+    await this.knex("riders").insert({ id: rider.id, balance: rider.balance, birthday: rider.birthday }).onConflict("id").merge()
+  }
 }
