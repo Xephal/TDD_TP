@@ -6,14 +6,17 @@ import type { RiderRepository } from "../domain/repositories/rider.repository"
 import type { BookingRepository } from "../domain/repositories/booking.repository"
 import type { DriverRepository } from "../domain/repositories/driver.repository"
 import type { Calendar } from "../domain/interfaces/calendar.service"
+import type { DistanceCalculator } from "../domain/interfaces/distance-calculator.interface"
 
 export function createBookRideUseCase(
   riderRepo: RiderRepository,
   bookingRepo: BookingRepository,
   driverRepo: DriverRepository,
-  calendar: Calendar 
+  calendar: Calendar,
+  distanceCalculator: DistanceCalculator 
 ) {
-  return async (rider: Rider, from: string, to: string, distanceKm: number, uberx?: boolean): Promise<Booking> => {
+  return async (rider: Rider, from: string, to: string, _distanceKm?: number, uberx?: boolean): Promise<Booking> => {
+    const distanceKm = _distanceKm ?? await distanceCalculator.getDistanceKm(from, to);
     const basePrice = calculateTotalPrice(from, to, distanceKm)
     const today = calendar.today() 
 
