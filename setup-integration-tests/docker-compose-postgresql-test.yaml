@@ -1,0 +1,22 @@
+version: '3.3'
+services:
+  postgres:
+    image: 'postgres:13.2'
+    ports:
+      - "5433:5432"
+    networks:
+      - app_net
+    user: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ride_app_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+networks:
+  app_net:
+    driver: bridge

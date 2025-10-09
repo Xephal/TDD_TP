@@ -5,13 +5,13 @@
   "scripts": {
     "test": "vitest",
     "test:ci": "cross-env NODE_ENV=test vitest --run",
-    "db:migrate": "knex migrate:latest --knexfile ./knexfile.js",
-    "db:migrate:dev": "cross-env NODE_ENV=development knex migrate:latest --knexfile ./knexfile.js --env development",
-    "db:migrate:test": "cross-env NODE_ENV=test knex migrate:latest --knexfile ./knexfile.js --env test",
-    "db:rollback": "knex migrate:rollback --knexfile ./knexfile.js",
+    "db:migrate": "tsx ./scripts/migrate.ts",
+    "db:migrate:dev": "cross-env NODE_ENV=development tsx ./scripts/migrate.ts",
+    "db:migrate:test": "cross-env NODE_ENV=test tsx ./scripts/migrate.ts",
+    "db:rollback": "echo 'Rollback not implemented in script; use manual SQL if needed' && exit 0",
     "test:unit": "cross-env NODE_ENV=test vitest --run test/usecases",
     "test:unit:db": "npm run db:migrate:test && cross-env USE_REAL_DB=1 NODE_ENV=test vitest --run test/usecases",
-    "test:integration": "npm run db:migrate:test && cross-env INTEGRATION=1 NODE_ENV=test vitest --run test/integration"
+    "test:integration": "cross-env INTEGRATION=1 NODE_ENV=test vitest --config ./setup-integration-tests/vitest-integration.config.js --run"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +20,7 @@
   "devDependencies": {
     "@types/node": "^24.7.0",
     "cross-env": "^10.1.0",
+    "testcontainers": "^10.10.2",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",

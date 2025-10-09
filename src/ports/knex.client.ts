@@ -1,9 +1,27 @@
 import knex, { Knex } from "knex"
 
-const config: any = require("../../knexfile")
-
 const env = process.env.NODE_ENV || "development"
-const knexConfig: Knex.Config = (config as Record<string, Knex.Config>)[env] || config.development
+
+const getConnectionString = () => {
+	if (env === "test") {
+		return (
+			process.env.TEST_DATABASE_URL ||
+			// fallback only for local runs without Testcontainers
+			"postgres://postgres:postgres@localhost:5432/ride_app_test"
+		)
+	}
+	return (
+		process.env.DATABASE_URL ||
+		// default local dev
+		"postgres://postgres:postgres@localhost:5432/ride_app_dev"
+	)
+}
+
+const knexConfig: Knex.Config = {
+	client: "pg",
+	connection: getConnectionString(),
+	migrations: { directory: "./migrations" },
+}
 
 export const db: Knex = knex(knexConfig)
 

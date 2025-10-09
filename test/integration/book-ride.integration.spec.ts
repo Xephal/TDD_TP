@@ -55,6 +55,8 @@ describe.skipIf(process.env.INTEGRATION !== "1")("Book ride integration (DB)", (
 
   test("cancel a booking persists cancellation and updates rider balance", async () => {
     const rider = (await riderRepo.findById("ri_1"))!
+    
+    await bookRide(rider, "Paris", "Lyon", 5)
     const bookings = await bookingRepo.findByRiderId(rider.id)
     const pending = bookings.find(b => b.status === BookingStatus.PENDING)!
 
