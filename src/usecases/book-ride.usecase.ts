@@ -36,7 +36,13 @@ export function bookRide(
 export function cancelBooking(rider: Rider, repository: RiderRepository): Booking {
   const booking = rider.booking.find(b => b.status === BookingStatus.PENDING || b.status === BookingStatus.ACCEPTED)
   if (!booking) throw new Error("No booking to cancel")
-  if (booking.status === BookingStatus.ACCEPTED) rider.balance += booking.amount - 5 
+  if (booking.status === BookingStatus.ACCEPTED) {
+    if (new Date().getDate() === rider.birthday.getDate() && new Date().getMonth() === rider.birthday.getMonth()){
+      rider.balance += booking.amount
+    } else {
+    rider.balance += booking.amount - 5 
+    }
+  }
   if (booking.status === BookingStatus.PENDING) rider.balance += booking.amount
   booking.status = BookingStatus.CANCELED
   return booking
