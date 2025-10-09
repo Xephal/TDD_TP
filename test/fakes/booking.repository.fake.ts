@@ -13,7 +13,7 @@ export class BookingRepositoryFake implements BookingRepository {
   }
 
   async findByRiderId(riderId: string): Promise<Booking[]> {
-    return Array.from(this.bookings.values()).filter(b => b.riderId === riderId)
+    return Array.from(this.bookings.values()).filter(b => b.riderId === riderId).reverse()
   }
 
   async save(booking: Booking): Promise<void> {
