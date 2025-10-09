@@ -1,4 +1,6 @@
+import type { Booking } from "./booking"
+
 export type Driver = {
     id: string,
-    bookingId: string | null
+    booking: Booking | null
 }

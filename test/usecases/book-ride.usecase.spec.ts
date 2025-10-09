@@ -2,7 +2,9 @@ import { describe, test, expect, beforeEach } from "vitest"
 import { bookRide, cancelBooking } from "../../src/usecases/book-ride.usecase"
 import { canBookRide, checkBalance, hasNoPendingRide } from "../../src/domain/services/rider.service"
 import { calculateBasePrice, calculateTotalPrice, calculatePricePerKm } from "../../src/domain/services/pricing.service"
+import { acceptBooking } from "../../src/domain/services/rider.service"
 import type { Rider } from "../../src/entities/rider"
+import type { Driver } from "../../src/entities/driver"
 import { BookingStatus } from "../../src/entities/booking"
 import { RiderRepositoryFake } from "../fakes/rider.repository.fake"
 import type { Booking } from "../../src/entities/booking"
@@ -123,6 +125,15 @@ describe("calculatePrice", () => {
       const canceled = cancelBooking(rider, riderRepository)
       expect(canceled.status).toBe(BookingStatus.CANCELED)
       expect(rider.balance).toBe(50 + 15)
-    });
+    })
+
+    test("marks booking as confirmed when driver accepts it", () => {
+      const rider: Rider = riderRepository.findById("r1")!
+      const driver: Driver = { id: "d1", booking: null }
+      const newBooking = bookRide(rider, "Paris", "Lyon", 3, riderRepository)
+      acceptBooking(newBooking, driver)
+      expect(newBooking.status).toBe(BookingStatus.ACCEPTED)
+      expect(driver.booking).toBe(newBooking)
+    })
   })
 })

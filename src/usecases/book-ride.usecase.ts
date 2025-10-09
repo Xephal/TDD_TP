@@ -47,3 +47,4 @@ export function cancelBooking(rider: Rider, repository: RiderRepository): Bookin
   booking.status = BookingStatus.CANCELED
   return booking
 }
+
