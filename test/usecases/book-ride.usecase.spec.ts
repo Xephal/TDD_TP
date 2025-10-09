@@ -11,6 +11,7 @@ import db from "../../src/ports/knex.client"
 import type { Rider } from "../../src/entities/rider"
 import type { Driver } from "../../src/entities/driver"
 import type { Booking } from "../../src/entities/booking"
+import { CalendarStub } from "../stubs/calendar.stub"
 
 describe("BookRide UseCase", () => {
   let riderRepository: any
@@ -21,56 +22,59 @@ describe("BookRide UseCase", () => {
   let trx: any | null = null
 
   beforeEach(async () => {
-    const useReal = process.env.USE_REAL_DB === "1"
-    if (useReal) {
-      trx = await db.transaction()
-      const repos = createRepos(true, trx)
-      riderRepository = repos.riderRepo
-      driverRepository = repos.driverRepo
-      bookingRepository = repos.bookingRepo
+  const useReal = process.env.USE_REAL_DB === "1"
+  const calendar = new CalendarStub("2025-06-01T12:00:00Z") 
 
-      await trx("riders").insert([
-        { id: "r1", balance: 50, birthday: "1990-06-15" },
-        { id: "r2", balance: 20, birthday: "1985-12-20" },
-        { id: "r3", balance: 50, birthday: "1992-03-10" },
-        { id: "r4", balance: 50, birthday: "2000-06-15" },
-        { id: "r5", balance: 50, birthday: "1995-11-25" },
-        { id: "r6", balance: 50, birthday: new Date() },
-      ])
+  if (useReal) {
+    trx = await db.transaction()
+    const repos = createRepos(true, trx)
+    riderRepository = repos.riderRepo
+    driverRepository = repos.driverRepo
+    bookingRepository = repos.bookingRepo
 
-      await trx("drivers").insert([{ id: "d1", name: null }])
+    await trx("riders").insert([
+      { id: "r1", balance: 50, birthday: "1990-06-15" },
+      { id: "r2", balance: 20, birthday: "1985-12-20" },
+      { id: "r3", balance: 50, birthday: "1992-03-10" },
+      { id: "r4", balance: 50, birthday: "2000-06-15" },
+      { id: "r5", balance: 50, birthday: "1995-11-25" },
+      { id: "r6", balance: 50, birthday: new Date() },
+    ])
 
-      await trx("bookings").insert([
-        { id: "b1", rider_id: "r2", driver_id: null, from: "Paris", to: "Other", status: BookingStatus.PENDING, amount: 15 },
-        { id: "b2", rider_id: "r3", driver_id: null, from: "Paris", to: "Lyon", status: BookingStatus.PENDING, amount: 20 },
-        { id: "b_accepted", rider_id: "r4", driver_id: null, from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 },
-        { id: "b_canceled", rider_id: "r5", driver_id: null, from: "Paris", to: "Lyon", status: BookingStatus.CANCELED, amount: 15 },
-        { id: "b_accepted_r6", rider_id: "r6", driver_id: null, from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 },
-      ])
-    } else {
-      const repos = createRepos(false)
-  bookingRepository = repos.bookingRepo
-      driverRepository = repos.driverRepo
-      riderRepository = new RiderRepositoryFake([
-        { id: "r1", balance: 50, booking: [], birthday: new Date("1990-06-15") },
-        { id: "r2", balance: 20, booking: [{ id: "b1", riderId: "r2", from: "Paris", to: "Other", status: BookingStatus.PENDING, amount: 15 }], birthday: new Date("1985-12-20") },
-        { id: "r3", balance: 50, booking: [{ id: "b2", riderId: "r3", from: "Paris", to: "Lyon", status: BookingStatus.PENDING, amount: 20 }], birthday: new Date("1992-03-10") },
-        { id: "r4", balance: 50, booking: [{ id: "b_accepted", riderId: "r4", from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 }], birthday: new Date("2000-06-15") },
-        { id: "r5", balance: 50, booking: [{ id: "b_canceled", riderId: "r5", from: "Paris", to: "Lyon", status: BookingStatus.CANCELED, amount: 15 }], birthday: new Date("1995-11-25") },
-        { id: "r6", balance: 50, booking: [{ id: "b_accepted", riderId: "r6", from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 }], birthday: new Date() },
-      ])
+    await trx("drivers").insert([{ id: "d1", name: null }])
 
-  await bookingRepository.save({ id: "b1", riderId: "r2", driverId: null, from: "Paris", to: "Other", status: BookingStatus.PENDING, amount: 15 })
-  await bookingRepository.save({ id: "b2", riderId: "r3", driverId: null, from: "Paris", to: "Lyon", status: BookingStatus.PENDING, amount: 20 })
-  await bookingRepository.save({ id: "b_accepted", riderId: "r4", driverId: null, from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 })
-  await bookingRepository.save({ id: "b_canceled", riderId: "r5", driverId: null, from: "Paris", to: "Lyon", status: BookingStatus.CANCELED, amount: 15 })
-  await bookingRepository.save({ id: "b_accepted_r6", riderId: "r6", driverId: null, from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 })
-      await driverRepository.save({ id: "d1", booking: null })
-    }
+    await trx("bookings").insert([
+      { id: "b1", rider_id: "r2", driver_id: null, from: "Paris", to: "Other", status: BookingStatus.PENDING, amount: 15 },
+      { id: "b2", rider_id: "r3", driver_id: null, from: "Paris", to: "Lyon", status: BookingStatus.PENDING, amount: 20 },
+      { id: "b_accepted", rider_id: "r4", driver_id: null, from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 },
+      { id: "b_canceled", rider_id: "r5", driver_id: null, from: "Paris", to: "Lyon", status: BookingStatus.CANCELED, amount: 15 },
+      { id: "b_accepted_r6", rider_id: "r6", driver_id: null, from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 },
+    ])
+  } else {
+    const repos = createRepos(false)
+    bookingRepository = repos.bookingRepo
+    driverRepository = repos.driverRepo
+    riderRepository = new RiderRepositoryFake([
+      { id: "r1", balance: 50, booking: [], birthday: new Date("1990-06-15") },
+      { id: "r2", balance: 20, booking: [{ id: "b1", riderId: "r2", from: "Paris", to: "Other", status: BookingStatus.PENDING, amount: 15 }], birthday: new Date("1985-12-20") },
+      { id: "r3", balance: 50, booking: [{ id: "b2", riderId: "r3", from: "Paris", to: "Lyon", status: BookingStatus.PENDING, amount: 20 }], birthday: new Date("1992-03-10") },
+      { id: "r4", balance: 50, booking: [{ id: "b_accepted", riderId: "r4", from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 }], birthday: new Date("2000-06-15") },
+      { id: "r5", balance: 50, booking: [{ id: "b_canceled", riderId: "r5", from: "Paris", to: "Lyon", status: BookingStatus.CANCELED, amount: 15 }], birthday: new Date("1995-11-25") },
+      { id: "r6", balance: 50, booking: [{ id: "b_accepted", riderId: "r6", from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 }], birthday: new Date() },
+    ])
 
-    bookRide = createBookRideUseCase(riderRepository, bookingRepository, driverRepository)
-    cancelBooking = createCancelBookingUseCase(riderRepository, bookingRepository)
-  })
+    await bookingRepository.save({ id: "b1", riderId: "r2", driverId: null, from: "Paris", to: "Other", status: BookingStatus.PENDING, amount: 15 })
+    await bookingRepository.save({ id: "b2", riderId: "r3", driverId: null, from: "Paris", to: "Lyon", status: BookingStatus.PENDING, amount: 20 })
+    await bookingRepository.save({ id: "b_accepted", riderId: "r4", driverId: null, from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 })
+    await bookingRepository.save({ id: "b_canceled", riderId: "r5", driverId: null, from: "Paris", to: "Lyon", status: BookingStatus.CANCELED, amount: 15 })
+    await bookingRepository.save({ id: "b_accepted_r6", riderId: "r6", driverId: null, from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 })
+    await driverRepository.save({ id: "d1", booking: null })
+  }
+
+  bookRide = createBookRideUseCase(riderRepository, bookingRepository, driverRepository, calendar)
+  cancelBooking = createCancelBookingUseCase(riderRepository, bookingRepository)
+})
+
 
   afterEach(async () => {
     if (trx) {
@@ -153,6 +157,21 @@ describe("BookRide UseCase", () => {
       const check1 = canBookRide(rider1, newBooking1)
       expect(check1).toBe(true)
     })
+
+    test("if we use UberX, 5 euros should be added to the ride (it's not the rider's birthday)", async () => {
+      const rider = (await riderRepository.findById("r1"))!
+      const booking = await bookRide(rider, "Paris", "Lyon", 10, true)
+      expect(rider.balance).toBe(50 - (booking.amount))
+    })
+
+    test("should double the fare if ride is booked on Christmas Day", async () => {
+      const calendar = new CalendarStub("2025-12-25T12:00:00Z")
+      bookRide = createBookRideUseCase(riderRepository, bookingRepository, driverRepository, calendar)
+
+      const rider = (await riderRepository.findById("r1"))!
+      const booking = await bookRide(rider, "Paris", "Lyon", 10)
+      expect(booking.amount).toBe(30)
+})
   })
 
   describe("Step 5: Cancel a ride", () => {

@@ -1,10 +1,11 @@
-import { describe, test, expect, beforeAll, afterAll } from "vitest"
+import { describe, test, expect, beforeEach, afterEach } from "vitest"
 import db from "../../src/ports/knex.client"
 import { createBookRideUseCase, createCancelBookingUseCase } from "../../src/usecases/book-ride.usecase"
 import { KnexBookingRepository } from "../../src/ports/knex-booking.repository"
 import { KnexDriverRepository } from "../../src/ports/knex-driver.repository"
 import { KnexRiderRepository } from "../../src/ports/knex-rider.repository"
 import { BookingStatus } from "../../src/entities/booking"
+import { CalendarStub } from "../stubs/calendar.stub"
 
 describe.skipIf(process.env.INTEGRATION !== "1")("Book ride integration (DB)", () => {
   let trx: any
@@ -14,21 +15,29 @@ describe.skipIf(process.env.INTEGRATION !== "1")("Book ride integration (DB)", (
   let bookRide: ReturnType<typeof createBookRideUseCase>
   let cancelBooking: ReturnType<typeof createCancelBookingUseCase>
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     trx = await db.transaction()
     bookingRepo = new KnexBookingRepository(trx)
     driverRepo = new KnexDriverRepository(trx)
     riderRepo = new KnexRiderRepository(trx)
 
+    const calendar = new CalendarStub("2025-06-01T12:00:00Z")
+
     await trx("riders").insert({ id: "ri_1", balance: 100, birthday: "1990-01-01" })
     await trx("drivers").insert({ id: "d_1", name: "Integration Driver" })
 
-    bookRide = createBookRideUseCase(riderRepo, bookingRepo, driverRepo)
+    bookRide = createBookRideUseCase(riderRepo, bookingRepo, driverRepo, calendar)
     cancelBooking = createCancelBookingUseCase(riderRepo, bookingRepo)
   })
 
-  afterAll(async () => {
-    await trx.rollback()
+  afterEach(async () => {
+    if (trx) {
+      await trx.rollback()
+      trx = null
+    }
+    if (process.env.USE_REAL_DB === "1") {
+      await db.destroy()
+    }
   })
 
   test("books a ride and persists booking as pending", async () => {

@@ -5,15 +5,23 @@ import type { Rider } from "../entities/rider"
 import type { RiderRepository } from "../domain/repositories/rider.repository"
 import type { BookingRepository } from "../domain/repositories/booking.repository"
 import type { DriverRepository } from "../domain/repositories/driver.repository"
-
+import type { Calendar } from "../domain/interfaces/calendar.service"
 
 export function createBookRideUseCase(
   riderRepo: RiderRepository,
   bookingRepo: BookingRepository,
-  driverRepo: DriverRepository
+  driverRepo: DriverRepository,
+  calendar: Calendar 
 ) {
-  return async (rider: Rider, from: string, to: string, distanceKm: number): Promise<Booking> => {
-    const total = calculateTotalPrice(from, to, distanceKm)
+  return async (rider: Rider, from: string, to: string, distanceKm: number, uberx?: boolean): Promise<Booking> => {
+    const basePrice = calculateTotalPrice(from, to, distanceKm)
+    const today = calendar.today() 
+
+    const isChristmas = today.getMonth() === 11 && today.getDate() === 25
+    let total = isChristmas ? basePrice * 2 : basePrice
+
+    if (!checkBalance(rider.balance, total)) throw new Error("Insufficient funds")
+
     const booking: Booking = {
       id: `b_${Math.random().toString(36).substring(2, 9)}`,
       riderId: rider.id,
@@ -24,19 +32,26 @@ export function createBookRideUseCase(
       distanceKm,
     }
 
-    if (!checkBalance(rider.balance, total)) throw new Error("Insufficient funds")
     if (!canBookRide(rider, booking)) throw new Error("Existing booking")
+
+    const isBirthday =
+      today.getDate() === rider.birthday.getDate() &&
+      today.getMonth() === rider.birthday.getMonth()
+
+    if (!isBirthday && uberx) {
+      booking.amount += 5
+      total = booking.amount
+    }
 
     rider.balance -= total
     rider.booking.push(booking)
 
-  await bookingRepo.save(booking)
-  await riderRepo.save(rider)
+    await bookingRepo.save(booking)
+    await riderRepo.save(rider)
 
     return booking
   }
 }
-
 
 export function createCancelBookingUseCase(
   riderRepo: RiderRepository,
@@ -59,9 +74,9 @@ export function createCancelBookingUseCase(
       rider.balance += booking.amount
     }
 
-  booking.status = BookingStatus.CANCELED
-  await bookingRepo.save(booking)
-  await riderRepo.save(rider)
+    booking.status = BookingStatus.CANCELED
+    await bookingRepo.save(booking)
+    await riderRepo.save(rider)
 
     return booking
   }

@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll, afterAll } from "vitest"
+import { describe, test, expect, beforeEach, afterEach } from "vitest"
 import db from "../../src/ports/knex.client"
 import { createAcceptBookingUseCase } from "../../src/usecases/accept-booking.usecase"
 import { KnexBookingRepository } from "../../src/ports/knex-booking.repository"
@@ -12,7 +12,7 @@ describe.skipIf(process.env.INTEGRATION !== "1")("Accept booking integration (DB
   let driverRepo: KnexDriverRepository
   let riderRepo: KnexRiderRepository
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     trx = await db.transaction()
     bookingRepo = new KnexBookingRepository(trx)
     driverRepo = new KnexDriverRepository(trx)
@@ -23,9 +23,15 @@ describe.skipIf(process.env.INTEGRATION !== "1")("Accept booking integration (DB
     await trx("bookings").insert({ id: "b_1", rider_id: "ri_1", driver_id: null, from: "Paris", to: "Lyon", status: BookingStatus.PENDING, amount: 20, distance_km: 10 })
   })
 
-  afterAll(async () => {
-    await trx.rollback()
-  })
+  afterEach(async () => {
+  if (trx) {
+    await trx.rollback();
+    trx = null;
+  }
+  if (process.env.USE_REAL_DB === "1") {
+    await db.destroy(); // ✅ ferme la connexion proprement entre tests
+  }
+});
 
   test("driver accepts booking and booking/status/driver updated in DB", async () => {
     const booking = (await bookingRepo.findById("b_1"))!
