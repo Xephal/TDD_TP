@@ -3,48 +3,66 @@ import { checkBalance, canBookRide } from "../domain/services/rider.service"
 import { BookingStatus, type Booking } from "../entities/booking"
 import type { Rider } from "../entities/rider"
 import type { RiderRepository } from "../domain/repositories/rider.repository"
+import type { BookingRepository } from "../domain/repositories/booking.repository"
+import type { DriverRepository } from "../domain/repositories/driver.respository"
 
-export function bookRide(
-  rider: Rider,
-  from: string,
-  to: string,
-  distanceKm: number,
-  repository: RiderRepository
-): Booking {
-  const total = calculateTotalPrice(from, to, distanceKm)
-  const newBooking: Booking = {
-    id: `b_${Math.random().toString(36).substring(2, 9)}`,
-    riderId: rider.id,
-    from,
-    to,
-    status: BookingStatus.PENDING,
-    amount: total,
-    distanceKm,
-  }
 
-  if (!checkBalance(rider.balance, total)) throw new Error("Insufficient funds")
-  if (!canBookRide(rider, newBooking)) throw new Error("Existing booking")
-
-  
-
-  rider.booking.push(newBooking)
-  rider.balance -= total
-
-  return newBooking
-}
-
-export function cancelBooking(rider: Rider, repository: RiderRepository): Booking {
-  const booking = rider.booking.find(b => b.status === BookingStatus.PENDING || b.status === BookingStatus.ACCEPTED)
-  if (!booking) throw new Error("No booking to cancel")
-  if (booking.status === BookingStatus.ACCEPTED) {
-    if (new Date().getDate() === rider.birthday.getDate() && new Date().getMonth() === rider.birthday.getMonth()){
-      rider.balance += booking.amount
-    } else {
-    rider.balance += booking.amount - 5 
+export function createBookRideUseCase(
+  riderRepo: RiderRepository,
+  bookingRepo: BookingRepository,
+  driverRepo: DriverRepository
+) {
+  return (rider: Rider, from: string, to: string, distanceKm: number): Booking => {
+    const total = calculateTotalPrice(from, to, distanceKm)
+    const booking: Booking = {
+      id: `b_${Math.random().toString(36).substring(2, 9)}`,
+      riderId: rider.id,
+      from,
+      to,
+      status: BookingStatus.PENDING,
+      amount: total,
+      distanceKm,
     }
+
+    if (!checkBalance(rider.balance, total)) throw new Error("Insufficient funds")
+    if (!canBookRide(rider, booking)) throw new Error("Existing booking")
+
+    rider.balance -= total
+    rider.booking.push(booking)
+
+    bookingRepo.save(booking)
+    riderRepo.findById(rider.id)
+
+    return booking
   }
-  if (booking.status === BookingStatus.PENDING) rider.balance += booking.amount
-  booking.status = BookingStatus.CANCELED
-  return booking
 }
 
+
+export function createCancelBookingUseCase(
+  riderRepo: RiderRepository,
+  bookingRepo: BookingRepository
+) {
+  return (rider: Rider): Booking => {
+    const booking = rider.booking.find(
+      b => b.status === BookingStatus.PENDING || b.status === BookingStatus.ACCEPTED
+    )
+    if (!booking) throw new Error("No booking to cancel")
+
+    const today = new Date()
+    const isBirthday =
+      today.getDate() === rider.birthday.getDate() &&
+      today.getMonth() === rider.birthday.getMonth()
+
+    if (booking.status === BookingStatus.ACCEPTED) {
+      rider.balance += isBirthday ? booking.amount : booking.amount - 5
+    } else if (booking.status === BookingStatus.PENDING) {
+      rider.balance += booking.amount
+    }
+
+    booking.status = BookingStatus.CANCELED
+    bookingRepo.save(booking)
+    riderRepo.findById(rider.id)
+
+    return booking
+  }
+}

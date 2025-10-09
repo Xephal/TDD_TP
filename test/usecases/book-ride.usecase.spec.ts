@@ -1,16 +1,21 @@
 import { describe, test, expect, beforeEach } from "vitest"
-import { bookRide, cancelBooking } from "../../src/usecases/book-ride.usecase"
-import { canBookRide, checkBalance, hasNoPendingRide } from "../../src/domain/services/rider.service"
+import { createBookRideUseCase, createCancelBookingUseCase } from "../../src/usecases/book-ride.usecase"
+import { canBookRide, checkBalance, hasNoPendingRide, acceptBooking } from "../../src/domain/services/rider.service"
 import { calculateBasePrice, calculateTotalPrice, calculatePricePerKm } from "../../src/domain/services/pricing.service"
-import { acceptBooking } from "../../src/domain/services/rider.service"
-import type { Rider } from "../../src/entities/rider"
-import type { Driver } from "../../src/entities/driver"
 import { BookingStatus } from "../../src/entities/booking"
 import { RiderRepositoryFake } from "../fakes/rider.repository.fake"
+import { DriverRepositoryFake } from "../fakes/driver.repository.fake"
+import { BookingRepositoryFake } from "../fakes/booking.repository.fake"
+import type { Rider } from "../../src/entities/rider"
+import type { Driver } from "../../src/entities/driver"
 import type { Booking } from "../../src/entities/booking"
 
-describe("calculatePrice", () => {
+describe("BookRide UseCase", () => {
   let riderRepository: RiderRepositoryFake
+  let driverRepository: DriverRepositoryFake
+  let bookingRepository: BookingRepositoryFake
+  let bookRide: ReturnType<typeof createBookRideUseCase>
+  let cancelBooking: ReturnType<typeof createCancelBookingUseCase>
 
   beforeEach(() => {
     riderRepository = new RiderRepositoryFake([
@@ -21,6 +26,11 @@ describe("calculatePrice", () => {
       { id: "r5", balance: 50, booking: [{ id: "b_canceled", riderId: "r5", from: "Paris", to: "Lyon", status: BookingStatus.CANCELED, amount: 15 }], birthday: new Date("1995-11-25")},
       { id: "r6", balance: 50, booking: [{ id: "b_accepted", riderId: "r6", from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 15 }], birthday: new Date() },
     ])
+    driverRepository = new DriverRepositoryFake([{ id: "d1", booking: null }])
+    bookingRepository = new BookingRepositoryFake()
+    
+    bookRide = createBookRideUseCase(riderRepository, bookingRepository, driverRepository)
+    cancelBooking = createCancelBookingUseCase(riderRepository, bookingRepository)
   })
 
   describe("Step 1: Minimum fare", () => {
@@ -70,14 +80,14 @@ describe("calculatePrice", () => {
 
     test("marks booking as pending when created", () => {
       const rider = riderRepository.findById("r1")!
-      const booking = bookRide(rider, "Paris", "Paris", 10, riderRepository)
+      const booking = bookRide(rider, "Paris", "Paris", 10)
       expect(booking.status).toBe("pending")
       expect(typeof booking.amount).toBe("number")
     })
 
     test("books a ride when rider has funds and no active booking", () => {
       const rider = riderRepository.findById("r1")!
-      const ride = bookRide(rider, "Paris", "Paris", 10, riderRepository)
+      const ride = bookRide(rider, "Paris", "Paris", 10)
       expect(ride.from).toBe("Paris")
       expect(ride.to).toBe("Paris")
       expect(rider.booking.length).toBe(1)
@@ -97,32 +107,31 @@ describe("calculatePrice", () => {
       const check1 = canBookRide(rider1, newBooking1)
       expect(check1).toBe(true)
     })
-  
   })
 
   describe("Step 5: Cancel a ride", () => {
     test("marks booking as canceled when rider cancels it", () => {
       const rider: Rider = riderRepository.findById("r3")!
-      const canceled = cancelBooking(rider, riderRepository)
+      const canceled = cancelBooking(rider)
       expect(canceled.status).toBe(BookingStatus.CANCELED)
       expect(rider.balance).toBe(70)
     }) 
     
     test("marks booking as canceled when rider cancels an accepted booking and take a 5 euro fee", () => {
       const rider = riderRepository.findById("r4")!
-      const canceled = cancelBooking(rider, riderRepository)
+      const canceled = cancelBooking(rider)
       expect(canceled.status).toBe(BookingStatus.CANCELED)
       expect(rider.balance).toBe(50 + 15 - 5)
     })
 
     test("if a ride is already canceled, it should not be canceled again", () => {
       const rider: Rider = riderRepository.findById("r5")!
-      expect(() => cancelBooking(rider, riderRepository)).toThrowError("No booking to cancel")
+      expect(() => cancelBooking(rider)).toThrowError("No booking to cancel")
     })
     
     test("if it's the birthday of the rider, no cancellation fee should be applied", () => {
       const rider: Rider = riderRepository.findById("r6")!
-      const canceled = cancelBooking(rider, riderRepository)
+      const canceled = cancelBooking(rider)
       expect(canceled.status).toBe(BookingStatus.CANCELED)
       expect(rider.balance).toBe(50 + 15)
     })
@@ -130,7 +139,7 @@ describe("calculatePrice", () => {
     test("marks booking as confirmed when driver accepts it", () => {
       const rider: Rider = riderRepository.findById("r1")!
       const driver: Driver = { id: "d1", booking: null }
-      const newBooking = bookRide(rider, "Paris", "Lyon", 3, riderRepository)
+      const newBooking = bookRide(rider, "Paris", "Lyon", 3)
       acceptBooking(newBooking, driver)
       expect(newBooking.status).toBe(BookingStatus.ACCEPTED)
       expect(driver.booking).toBe(newBooking)
