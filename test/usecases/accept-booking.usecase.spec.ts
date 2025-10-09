@@ -28,20 +28,20 @@ describe("Accept booking by driver", () => {
     acceptBookingUseCase = createAcceptBookingUseCase(bookingRepository, driverRepository)
   })
 
-  test("should assign booking to driver and set status to accepted", () => {
-    const booking = bookingRepository.findById("b1")!
-    const updatedBooking = acceptBookingUseCase("d1", booking)
+  test("should assign booking to driver and set status to accepted", async () => {
+    const booking = (await bookingRepository.findById("b1"))!
+    const updatedBooking = await acceptBookingUseCase("d1", booking)
 
-    const driver = driverRepository.findById("d1")!
-    const savedBooking = bookingRepository.findById("b1")!
+    const driver = (await driverRepository.findById("d1"))!
+    const savedBooking = (await bookingRepository.findById("b1"))!
 
     expect(updatedBooking.status).toBe(BookingStatus.ACCEPTED)
     expect(driver.booking?.id).toBe("b1")
     expect(savedBooking.status).toBe(BookingStatus.ACCEPTED)
   })
 
-  test("should throw an error if driver not found", () => {
-    const booking = bookingRepository.findById("b1")!
-    expect(() => acceptBookingUseCase("d999", booking)).toThrowError("Driver not found")
+  test("should throw an error if driver not found", async () => {
+    const booking = (await bookingRepository.findById("b1"))!
+    await expect(acceptBookingUseCase("d999", booking)).rejects.toThrowError("Driver not found")
   })
 })

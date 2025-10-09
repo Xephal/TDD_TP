@@ -29,7 +29,7 @@ Story 3
 Il est temps de faire votre choix sur le système de stockage. Pour ce projet, une base de données Postgresql semble
 un choix judicieux.
 Ajoutez une base de données pour le stockage de vos Rider, Ride et Driver.
-Utiliser le query builder Knex
+Utiliser le query builder Knex (https://knexjs.org)
 Pour créer une migration, utiliser la commande “npm run knex migrate:make NOM_DE_LA_MIGRATION”
 Chaque fonction de la classe devra être testé pas un test d’integration
 

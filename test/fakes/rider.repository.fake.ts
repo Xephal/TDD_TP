@@ -8,7 +8,7 @@ export class RiderRepositoryFake implements RiderRepository {
     riders?.forEach(r => this.riders.set(r.id, r))
   }
 
-  findById(id: string): Rider | null {
+  async findById(id: string): Promise<Rider | null> {
     return this.riders.get(id) ?? null
   }
 }

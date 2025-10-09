@@ -8,14 +8,14 @@ export function createAcceptBookingUseCase(
   bookingRepo: BookingRepository,
   driverRepo: DriverRepository
 ) {
-  return (driverId: string, booking: Booking): Booking => {
-    const driver: Driver | null = driverRepo.findById(driverId)
+  return async (driverId: string, booking: Booking): Promise<Booking> => {
+    const driver: Driver | null = await driverRepo.findById(driverId)
     if (!driver) throw new Error("Driver not found")
 
     acceptBooking(booking, driver)
 
-    driverRepo.save(driver)
-    bookingRepo.save(booking)
+    await driverRepo.save(driver)
+    await bookingRepo.save(booking)
 
     return booking
   }

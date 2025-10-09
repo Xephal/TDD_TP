@@ -4,7 +4,7 @@ import { BookingStatus, type Booking } from "../entities/booking"
 import type { Rider } from "../entities/rider"
 import type { RiderRepository } from "../domain/repositories/rider.repository"
 import type { BookingRepository } from "../domain/repositories/booking.repository"
-import type { DriverRepository } from "../domain/repositories/driver.respository"
+import type { DriverRepository } from "../domain/repositories/driver.repository"
 
 
 export function createBookRideUseCase(
@@ -12,7 +12,7 @@ export function createBookRideUseCase(
   bookingRepo: BookingRepository,
   driverRepo: DriverRepository
 ) {
-  return (rider: Rider, from: string, to: string, distanceKm: number): Booking => {
+  return async (rider: Rider, from: string, to: string, distanceKm: number): Promise<Booking> => {
     const total = calculateTotalPrice(from, to, distanceKm)
     const booking: Booking = {
       id: `b_${Math.random().toString(36).substring(2, 9)}`,
@@ -30,8 +30,8 @@ export function createBookRideUseCase(
     rider.balance -= total
     rider.booking.push(booking)
 
-    bookingRepo.save(booking)
-    riderRepo.findById(rider.id)
+    await bookingRepo.save(booking)
+    await riderRepo.findById(rider.id)
 
     return booking
   }
@@ -42,7 +42,7 @@ export function createCancelBookingUseCase(
   riderRepo: RiderRepository,
   bookingRepo: BookingRepository
 ) {
-  return (rider: Rider): Booking => {
+  return async (rider: Rider): Promise<Booking> => {
     const booking = rider.booking.find(
       b => b.status === BookingStatus.PENDING || b.status === BookingStatus.ACCEPTED
     )
@@ -60,8 +60,8 @@ export function createCancelBookingUseCase(
     }
 
     booking.status = BookingStatus.CANCELED
-    bookingRepo.save(booking)
-    riderRepo.findById(rider.id)
+    await bookingRepo.save(booking)
+    await riderRepo.findById(rider.id)
 
     return booking
   }

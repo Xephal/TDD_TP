@@ -1,5 +1,5 @@
 import type { Driver } from "../../src/entities/driver"
-import type { DriverRepository } from "../../src/domain/repositories/driver.respository"
+import type { DriverRepository } from "../../src/domain/repositories/driver.repository"
 
 export class DriverRepositoryFake implements DriverRepository {
   private drivers = new Map<string, Driver>()
@@ -8,11 +8,11 @@ export class DriverRepositoryFake implements DriverRepository {
     drivers?.forEach(d => this.drivers.set(d.id, d))
   }
 
-  findById(id: string): Driver | null {
+  async findById(id: string): Promise<Driver | null> {
     return this.drivers.get(id) ?? null
   }
 
-  save(driver: Driver): void {
+  async save(driver: Driver): Promise<void> {
     this.drivers.set(driver.id, driver)
   }
 }

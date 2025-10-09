@@ -28,7 +28,7 @@ describe("BookRide UseCase", () => {
     ])
     driverRepository = new DriverRepositoryFake([{ id: "d1", booking: null }])
     bookingRepository = new BookingRepositoryFake()
-    
+
     bookRide = createBookRideUseCase(riderRepository, bookingRepository, driverRepository)
     cancelBooking = createCancelBookingUseCase(riderRepository, bookingRepository)
   })
@@ -68,41 +68,41 @@ describe("BookRide UseCase", () => {
       expect(checkBalance(5, 10)).toBe(false)
     })
 
-    test("returns true when activeRide is null", () => {
-      const rider = riderRepository.findById("r1")!
+    test("returns true when activeRide is null", async () => {
+      const rider = (await riderRepository.findById("r1"))!
       expect(hasNoPendingRide(rider.booking)).toBe(true)
     })
 
-    test("return false when rider has an active ride", () => {
-      const rider = riderRepository.findById("r2")!
+    test("return false when rider has an active ride", async () => {
+      const rider = (await riderRepository.findById("r2"))!
       expect(hasNoPendingRide(rider.booking)).toBe(false)
     })
 
-    test("marks booking as pending when created", () => {
-      const rider = riderRepository.findById("r1")!
-      const booking = bookRide(rider, "Paris", "Paris", 10)
+    test("marks booking as pending when created", async () => {
+      const rider = (await riderRepository.findById("r1"))!
+      const booking = await bookRide(rider, "Paris", "Paris", 10)
       expect(booking.status).toBe("pending")
       expect(typeof booking.amount).toBe("number")
     })
 
-    test("books a ride when rider has funds and no active booking", () => {
-      const rider = riderRepository.findById("r1")!
-      const ride = bookRide(rider, "Paris", "Paris", 10)
+    test("books a ride when rider has funds and no active booking", async () => {
+      const rider = (await riderRepository.findById("r1"))!
+      const ride = await bookRide(rider, "Paris", "Paris", 10)
       expect(ride.from).toBe("Paris")
       expect(ride.to).toBe("Paris")
       expect(rider.booking.length).toBe(1)
       expect(rider.balance).toBe(50 - ride.amount)
     })
 
-    test("rider should not be able to book a ride if he has a pending booking", () => {
-      const rider2 = riderRepository.findById("r2")!    
+    test("rider should not be able to book a ride if he has a pending booking", async () => {
+      const rider2 = (await riderRepository.findById("r2"))!    
       const newBooking2: Booking = { id: "b4", riderId: "r2", from: "Paris", to: "Lyon", status: BookingStatus.PENDING, amount: 20, distanceKm:3 }
       const check2 = canBookRide(rider2, newBooking2)
       expect(check2).toBe(false)
     })
 
-    test("rider can book a ride if he has no pending booking", () => {
-      const rider1 = riderRepository.findById("r1")!
+    test("rider can book a ride if he has no pending booking", async () => {
+      const rider1 = (await riderRepository.findById("r1"))!
       const newBooking1:Booking = { id: "b3", riderId: "r1", from: "Paris", to: "Lyon", status: BookingStatus.PENDING, amount: 5 ,distanceKm:3}
       const check1 = canBookRide(rider1, newBooking1)
       expect(check1).toBe(true)
@@ -110,39 +110,41 @@ describe("BookRide UseCase", () => {
   })
 
   describe("Step 5: Cancel a ride", () => {
-    test("marks booking as canceled when rider cancels it", () => {
-      const rider: Rider = riderRepository.findById("r3")!
-      const canceled = cancelBooking(rider)
+    test("marks booking as canceled when rider cancels it", async () => {
+      const rider: Rider = (await riderRepository.findById("r3"))!
+      const canceled = await cancelBooking(rider)
       expect(canceled.status).toBe(BookingStatus.CANCELED)
       expect(rider.balance).toBe(70)
     }) 
     
-    test("marks booking as canceled when rider cancels an accepted booking and take a 5 euro fee", () => {
-      const rider = riderRepository.findById("r4")!
-      const canceled = cancelBooking(rider)
+    test("marks booking as canceled when rider cancels an accepted booking and take a 5 euro fee", async () => {
+      const rider = (await riderRepository.findById("r4"))!
+      const canceled = await cancelBooking(rider)
       expect(canceled.status).toBe(BookingStatus.CANCELED)
       expect(rider.balance).toBe(50 + 15 - 5)
     })
 
-    test("if a ride is already canceled, it should not be canceled again", () => {
-      const rider: Rider = riderRepository.findById("r5")!
-      expect(() => cancelBooking(rider)).toThrowError("No booking to cancel")
+    test("if a ride is already canceled, it should not be canceled again", async () => {
+      const rider: Rider = (await riderRepository.findById("r5"))!
+      await expect(cancelBooking(rider)).rejects.toThrowError("No booking to cancel")
     })
     
-    test("if it's the birthday of the rider, no cancellation fee should be applied", () => {
-      const rider: Rider = riderRepository.findById("r6")!
-      const canceled = cancelBooking(rider)
+    test("if it's the birthday of the rider, no cancellation fee should be applied", async () => {
+      const rider: Rider = (await riderRepository.findById("r6"))!
+      const canceled = await cancelBooking(rider)
       expect(canceled.status).toBe(BookingStatus.CANCELED)
       expect(rider.balance).toBe(50 + 15)
     })
 
-    test("marks booking as confirmed when driver accepts it", () => {
-      const rider: Rider = riderRepository.findById("r1")!
-      const driver: Driver = { id: "d1", booking: null }
-      const newBooking = bookRide(rider, "Paris", "Lyon", 3)
+    test("marks booking as confirmed when driver accepts it", async () => {
+      const rider: Rider = (await riderRepository.findById("r1"))!
+      const driver = (await driverRepository.findById("d1"))! 
+      const newBooking = await bookRide(rider, "Paris", "Lyon", 3)
       acceptBooking(newBooking, driver)
       expect(newBooking.status).toBe(BookingStatus.ACCEPTED)
       expect(driver.booking).toBe(newBooking)
+      const savedDriver = (await driverRepository.findById("d1"))!
+      expect(savedDriver.booking?.id).toBe(newBooking.id)
     })
   })
 })

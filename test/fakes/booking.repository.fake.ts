@@ -8,15 +8,15 @@ export class BookingRepositoryFake implements BookingRepository {
     bookings?.forEach(b => this.bookings.set(b.id, b))
   }
 
-  findById(id: string): Booking | null {
+  async findById(id: string): Promise<Booking | null> {
     return this.bookings.get(id) ?? null
   }
 
-  findByRiderId(riderId: string): Booking[] {
+  async findByRiderId(riderId: string): Promise<Booking[]> {
     return Array.from(this.bookings.values()).filter(b => b.riderId === riderId)
   }
 
-  save(booking: Booking): void {
+  async save(booking: Booking): Promise<void> {
     this.bookings.set(booking.id, booking)
   }
 }
