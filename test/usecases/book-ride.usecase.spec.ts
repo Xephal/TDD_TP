@@ -12,6 +12,7 @@ import type { Rider } from "../../src/entities/rider"
 import type { Driver } from "../../src/entities/driver"
 import type { Booking } from "../../src/entities/booking"
 import { CalendarStub } from "../stubs/calendar.stub"
+import { DistanceCalculatorStub } from "../stubs/distance-calculator.stub"
 
 describe("BookRide UseCase", () => {
   let riderRepository: any
@@ -20,10 +21,13 @@ describe("BookRide UseCase", () => {
   let bookRide: ReturnType<typeof createBookRideUseCase>
   let cancelBooking: ReturnType<typeof createCancelBookingUseCase>
   let trx: any | null = null
+  let calendar: CalendarStub;
+  let distanceCalculator: DistanceCalculatorStub;
 
   beforeEach(async () => {
   const useReal = process.env.USE_REAL_DB === "1"
-  const calendar = new CalendarStub("2025-06-01T12:00:00Z") 
+  calendar = new CalendarStub("2025-06-01T12:00:00Z") 
+  distanceCalculator = new DistanceCalculatorStub(10);
 
   if (useReal) {
     trx = await db.transaction()
@@ -71,7 +75,7 @@ describe("BookRide UseCase", () => {
     await driverRepository.save({ id: "d1", booking: null })
   }
 
-  bookRide = createBookRideUseCase(riderRepository, bookingRepository, driverRepository, calendar)
+  bookRide = createBookRideUseCase(riderRepository, bookingRepository, driverRepository, calendar, distanceCalculator)
   cancelBooking = createCancelBookingUseCase(riderRepository, bookingRepository)
 })
 
@@ -166,8 +170,7 @@ describe("BookRide UseCase", () => {
 
     test("should double the fare if ride is booked on Christmas Day", async () => {
       const calendar = new CalendarStub("2025-12-25T12:00:00Z")
-      bookRide = createBookRideUseCase(riderRepository, bookingRepository, driverRepository, calendar)
-
+      bookRide = createBookRideUseCase(riderRepository, bookingRepository, driverRepository, calendar, distanceCalculator)
       const rider = (await riderRepository.findById("r1"))!
       const booking = await bookRide(rider, "Paris", "Lyon", 10)
       expect(booking.amount).toBe(30)

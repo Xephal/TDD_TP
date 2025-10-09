@@ -29,7 +29,7 @@ describe.skipIf(process.env.INTEGRATION !== "1")("Accept booking integration (DB
     trx = null;
   }
   if (process.env.USE_REAL_DB === "1") {
-    await db.destroy(); // ✅ ferme la connexion proprement entre tests
+    await db.destroy(); 
   }
 });
 

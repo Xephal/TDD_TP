@@ -1,4 +1,4 @@
-import type { Calendar } from "../../src/domain/services/calendar.service"
+import type { Calendar } from "../../src/domain/interfaces/calendar.service"
 
 export class CalendarStub implements Calendar {
   private readonly fixedDate: Date
