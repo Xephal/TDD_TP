@@ -11,4 +11,8 @@ export class DriverRepositoryFake implements DriverRepository {
   findById(id: string): Driver | null {
     return this.drivers.get(id) ?? null
   }
+
+  save(driver: Driver): void {
+    this.drivers.set(driver.id, driver)
+  }
 }
