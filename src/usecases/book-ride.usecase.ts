@@ -33,6 +33,8 @@ export function createBookRideUseCase(
       status: BookingStatus.PENDING,
       amount: total,
       distanceKm,
+      createdAt: Date.now(),
+      driverId: null,
     }
 
     if (!canBookRide(rider, booking)) throw new Error("Existing booking")
@@ -47,7 +49,9 @@ export function createBookRideUseCase(
     }
 
     rider.balance -= total
-    rider.booking.push(booking)
+  // ensure booking array exists
+  rider.booking = rider.booking ?? []
+  rider.booking.push(booking)
 
     await bookingRepo.save(booking)
     await riderRepo.save(rider)

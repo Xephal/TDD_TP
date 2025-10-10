@@ -28,7 +28,7 @@ export class KnexDriverRepository implements DriverRepository {
             bookingRow.to,
             bookingRow.status as BookingStatus,
             Number(bookingRow.amount),
-            Number(bookingRow.created_at),
+            typeof bookingRow.created_at === 'number' ? Number(bookingRow.created_at) * 1000 : new Date(bookingRow.created_at).getTime(),
             bookingRow.driver_id ?? null,
             bookingRow.distance_km ?? null
           )
