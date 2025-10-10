@@ -1,4 +1,3 @@
-// test/integration/google-distance.integration.spec.ts
 import { describe, test, expect } from "vitest"
 import { GoogleDistanceApi } from "../../../src/api/google-distance.api"
 import * as dotenv from "dotenv"
@@ -23,3 +22,5 @@ describe.skipIf(!process.env.GOOGLE_MAPS_API_KEY)("GoogleDistanceApi (real API)"
     expect(city).toBe("Paris")
   })
 })
+
+// C'était bien, j'ai juste déplacé tout rapidemment et je l'ai foutu ailleurs
