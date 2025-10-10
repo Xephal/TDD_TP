@@ -1,4 +1,5 @@
 import type { Driver } from "../entities/driver"
+import { Booking, BookingStatus } from "../entities/booking"
 import type { DriverRepository } from "../domain/repositories/driver.repository"
 import db from "./knex.client"
 import type { Knex } from "knex"
@@ -20,16 +21,17 @@ export class KnexDriverRepository implements DriverRepository {
       id: row.id,
       name: row.name ?? null,
       booking: bookingRow
-        ? {
-            id: bookingRow.id,
-            riderId: bookingRow.rider_id,
-            driverId: bookingRow.driver_id,
-            from: bookingRow.from,
-            to: bookingRow.to,
-            status: bookingRow.status,
-            amount: Number(bookingRow.amount),
-            distanceKm: bookingRow.distance_km,
-          }
+        ? new Booking(
+            bookingRow.id,
+            bookingRow.rider_id,
+            bookingRow.from,
+            bookingRow.to,
+            bookingRow.status as BookingStatus,
+            Number(bookingRow.amount),
+            Number(bookingRow.created_at),
+            bookingRow.driver_id ?? null,
+            bookingRow.distance_km ?? null
+          )
         : null,
     }
 

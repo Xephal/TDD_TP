@@ -13,10 +13,22 @@ export class BookingRepositoryFake implements BookingRepository {
   }
 
   async findByRiderId(riderId: string): Promise<Booking[]> {
-    return Array.from(this.bookings.values()).filter(b => b.riderId === riderId).reverse()
+    return Array.from(this.bookings.values())
+      .filter(b => b.riderId === riderId)
+      .sort((a, b) => b.createdAt - a.createdAt)
   }
 
   async save(booking: Booking): Promise<void> {
-    this.bookings.set(booking.id, booking)
+    const existing = this.bookings.get(booking.id)
+    if (existing) {
+      // merge while preserving existing.createdAt unless explicitly provided
+      const merged: Booking = { ...existing, ...booking }
+      if (booking.createdAt == null) merged.createdAt = existing.createdAt
+      this.bookings.set(booking.id, merged)
+    } else {
+      // ensure createdAt exists on first save
+      if (booking.createdAt == null) booking.createdAt = Date.now()
+      this.bookings.set(booking.id, booking)
+    }
   }
 }

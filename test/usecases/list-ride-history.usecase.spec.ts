@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from "vitest"
 import { createListRideHistoryUseCase } from "../../src/usecases/list-ride-history.usecase"
-import { BookingStatus } from "../../src/entities/booking"
+import { BookingStatus, Booking } from "../../src/entities/booking"
 import { BookingRepositoryFake } from "../fakes/booking.repository.fake"
 import { DriverRepositoryFake } from "../fakes/driver.repository.fake"
 
@@ -10,8 +10,8 @@ describe("List ride history usecase", () => {
   beforeEach(() => {
     // createdAt are explicit so ordering is deterministic
     bookingsFake = new BookingRepositoryFake([
-      { id: "b1", riderId: "r1", driverId: "d1", from: "Paris", to: "Lyon", status: BookingStatus.ACCEPTED, amount: 10, createdAt: 1000 },
-      { id: "b2", riderId: "r1", driverId: null, from: "Paris", to: "Other", status: BookingStatus.CANCELED, amount: 5, createdAt: 2000 },
+      new Booking('b1', 'r1', 'Paris', 'Lyon', BookingStatus.ACCEPTED, 10, 1000, 'd1', null),
+      new Booking('b2', 'r1', 'Paris', 'Other', BookingStatus.CANCELED, 5, 2000, null, null),
     ])
   })
 
@@ -19,8 +19,8 @@ describe("List ride history usecase", () => {
     // arrange
     const driversFake = new DriverRepositoryFake([
       { id: "d1", name: "Jean", booking: null },
-    ] as any)
-    const listHistory = createListRideHistoryUseCase(bookingsFake, driversFake as any)
+    ])
+    const listHistory = createListRideHistoryUseCase(bookingsFake, driversFake)
 
     // act
     const res = await listHistory("r1")
