@@ -18,6 +18,7 @@ export class KnexDriverRepository implements DriverRepository {
 
     const driver: Driver = {
       id: row.id,
+      name: row.name ?? null,
       booking: bookingRow
         ? {
             id: bookingRow.id,
