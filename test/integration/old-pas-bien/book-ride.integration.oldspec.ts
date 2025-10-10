@@ -1,12 +1,12 @@
 import { describe, test, expect, beforeEach, afterEach } from "vitest"
-import db from "../../src/ports/knex.client"
-import { createBookRideUseCase, createCancelBookingUseCase } from "../../src/usecases/book-ride.usecase"
-import { KnexBookingRepository } from "../../src/ports/knex-booking.repository"
-import { KnexDriverRepository } from "../../src/ports/knex-driver.repository"
-import { KnexRiderRepository } from "../../src/ports/knex-rider.repository"
-import { BookingStatus } from "../../src/entities/booking"
-import { CalendarStub } from "../stubs/calendar.stub"
-import { DistanceCalculatorStub } from "../stubs/distance-calculator.stub"
+import db from "../../../src/ports/knex.client"
+import { createBookRideUseCase, createCancelBookingUseCase } from "../../../src/usecases/book-ride.usecase"
+import { KnexBookingRepository } from "../../../src/ports/knex-booking.repository"
+import { KnexDriverRepository } from "../../../src/ports/knex-driver.repository"
+import { KnexRiderRepository } from "../../../src/ports/knex-rider.repository"
+import { BookingStatus } from "../../../src/entities/booking"
+import { CalendarStub } from "../../stubs/calendar.stub"
+import { DistanceCalculatorStub } from "../../stubs/distance-calculator.stub"
 
 describe.skipIf(process.env.INTEGRATION !== "1")("Book ride integration (DB)", () => {
   let trx: any

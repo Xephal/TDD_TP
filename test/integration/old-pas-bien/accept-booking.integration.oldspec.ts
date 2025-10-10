@@ -1,10 +1,10 @@
 import { describe, test, expect, beforeEach, afterEach } from "vitest"
-import db from "../../src/ports/knex.client"
-import { createAcceptBookingUseCase } from "../../src/usecases/accept-booking.usecase"
-import { KnexBookingRepository } from "../../src/ports/knex-booking.repository"
-import { KnexDriverRepository } from "../../src/ports/knex-driver.repository"
-import { KnexRiderRepository } from "../../src/ports/knex-rider.repository"
-import { BookingStatus } from "../../src/entities/booking"
+import db from "../../../src/ports/knex.client"
+import { createAcceptBookingUseCase } from "../../../src/usecases/accept-booking.usecase"
+import { KnexBookingRepository } from "../../../src/ports/knex-booking.repository"
+import { KnexDriverRepository } from "../../../src/ports/knex-driver.repository"
+import { KnexRiderRepository } from "../../../src/ports/knex-rider.repository"
+import { BookingStatus } from "../../../src/entities/booking"
 
 describe.skipIf(process.env.INTEGRATION !== "1")("Accept booking integration (DB)", () => {
   let trx: any

@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeAll, beforeEach, afterEach, afterAll } from 'vitest'
 import knex from 'knex'
-import { KnexBookingRepository } from '../../src/ports/knex-booking.repository'
-import { KnexDriverRepository } from '../../src/ports/knex-driver.repository'
-import { createListRideHistoryUseCase } from '../../src/usecases/list-ride-history.usecase'
+import { KnexBookingRepository } from '../../../src/ports/knex-booking.repository'
+import { KnexDriverRepository } from '../../../src/ports/knex-driver.repository'
+import { createListRideHistoryUseCase } from '../../../src/usecases/list-ride-history.usecase'
 
 const db = knex({
   client: 'pg',

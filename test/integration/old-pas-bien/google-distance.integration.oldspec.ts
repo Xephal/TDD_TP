@@ -1,6 +1,6 @@
 // test/integration/google-distance.integration.spec.ts
 import { describe, test, expect } from "vitest"
-import { GoogleDistanceApi } from "../../src/api/google-distance.api"
+import { GoogleDistanceApi } from "../../../src/api/google-distance.api"
 import * as dotenv from "dotenv"
 
 dotenv.config()
