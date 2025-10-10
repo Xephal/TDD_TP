@@ -13,4 +13,6 @@ export type Booking = {
     status: BookingStatus
     amount: number
     distanceKm?: number
+    // optional timestamp (unix ms) used by use-cases for ordering
+    createdAt?: number
 }

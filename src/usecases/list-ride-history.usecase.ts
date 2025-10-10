@@ -10,16 +10,26 @@ export function createListRideHistoryUseCase(
 ) {
   return async (riderId: string): Promise<RideHistoryItem[]> => {
     const bookings = await bookingRepo.findByRiderId(riderId)
+    // ensure a deterministic order: most recent first
+    const sorted = bookings.slice().sort((a, b) => {
+      const ta = a.createdAt ?? 0
+      const tb = b.createdAt ?? 0
+      return tb - ta
+    })
 
-    if (!driverRepo) return bookings
+    if (!driverRepo) {
+      // attach driverName as null when driverRepo is absent (type-safe)
+      return sorted.map(b => ({ ...b, driverName: null }))
+    }
 
     const withNames = await Promise.all(
-      bookings.map(async (b) => {
-        if (!b.driverId) return b
+      sorted.map(async (b) => {
+  if (!b.driverId) return { ...b, driverName: null }
         const driver = await driverRepo.findById(b.driverId)
         return { ...b, driverName: driver?.name ?? null }
       })
     )
+
     return withNames
   }
 }
